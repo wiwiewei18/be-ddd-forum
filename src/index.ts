@@ -1,1 +1,1 @@
-console.log("RUNNING")
+import "./shared/infra/http/app";
