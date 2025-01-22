@@ -1,4 +1,4 @@
-import { Either, Result, right } from "../../../../shared/core/result";
+import { Either, left, Result, right } from "../../../../shared/core/result";
 import { AppError } from "../../../../shared/core/appError";
 import { UseCase } from "../../../../shared/core/useCase";
 import { CreateUserDTO } from "./createUserDTO";
@@ -23,6 +23,24 @@ export class CreateUserUseCase
     const passwordOrError = UserPassword.create({ value: request.password });
     const usernameOrError = UserName.create({ name: request.username });
 
-    return right(Result.ok<void>());
+    const dtoResult = Result.combine([
+      emailOrError,
+      passwordOrError,
+      usernameOrError,
+    ]);
+
+    if (dtoResult.isFailure) {
+      return left(Result.fail<void>(dtoResult.getErrorValue())) as Response;
+    }
+
+    const email: UserEmail = emailOrError.getValue();
+    const password: UserPassword = passwordOrError.getValue();
+    const username: UserName = usernameOrError.getValue();
+
+    try {
+      return right(Result.ok<void>());
+    } catch (err) {
+      return left(new AppError.UnexpectedError(err)) as Response;
+    }
   }
 }
