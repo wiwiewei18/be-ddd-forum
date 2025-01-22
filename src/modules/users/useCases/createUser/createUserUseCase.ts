@@ -4,6 +4,7 @@ import { UseCase } from "../../../../shared/core/useCase";
 import { CreateUserDTO } from "./createUserDTO";
 import { CreateUserErrors } from "./createUserErrors";
 import { UserEmail } from "../../domain/userEmail";
+import { UserPassword } from "../../domain/userPassword";
 
 type Response = Either<
   | CreateUserErrors.EmailAlreadyExistsError
@@ -18,6 +19,7 @@ export class CreateUserUseCase
 {
   async execute(request: CreateUserDTO): Promise<Response> {
     const emailOrError = UserEmail.create(request?.email);
+    const passwordOrError = UserPassword.create({ value: request.password });
 
     return right(Result.ok<void>());
   }
