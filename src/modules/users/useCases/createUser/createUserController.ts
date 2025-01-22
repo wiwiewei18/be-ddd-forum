@@ -1,6 +1,6 @@
 import * as express from "express";
 import { BaseController } from "../../../../shared/infra/http/models/baseController";
-import { TextUtils } from "../../../../shared/utils/testUtils";
+import { TextUtils } from "../../../../shared/utils/textUtils";
 import { CreateUserDTO } from "./createUserDTO";
 
 export class CreateUserController extends BaseController {
