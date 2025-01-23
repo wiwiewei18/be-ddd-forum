@@ -1,7 +1,8 @@
-import { Either, left, Result, right } from "../../../../shared/core/result";
+import { left, Result, right } from "../../../../shared/core/result";
 import { AppError } from "../../../../shared/core/appError";
 import { UseCase } from "../../../../shared/core/useCase";
 import { CreateUserDTO } from "./createUserDTO";
+import { CreateUserResponse } from "./createUserResponse";
 import { CreateUserErrors } from "./createUserErrors";
 import { UserEmail } from "../../domain/userEmail";
 import { UserPassword } from "../../domain/userPassword";
@@ -9,16 +10,8 @@ import { UserName } from "../../domain/userName";
 import { User } from "../../domain/user";
 import { IUserRepo } from "../../repos/userRepo";
 
-type Response = Either<
-  | CreateUserErrors.EmailAlreadyExistsError
-  | CreateUserErrors.UsernameTakenError
-  | AppError.UnexpectedError
-  | Result<any>,
-  Result<void>
->;
-
 export class CreateUserUseCase
-  implements UseCase<CreateUserDTO, Promise<Response>>
+  implements UseCase<CreateUserDTO, Promise<CreateUserResponse>>
 {
   private userRepo: IUserRepo;
 
@@ -26,7 +19,7 @@ export class CreateUserUseCase
     this.userRepo = userRepo;
   }
 
-  async execute(request: CreateUserDTO): Promise<Response> {
+  async execute(request: CreateUserDTO): Promise<CreateUserResponse> {
     const emailOrError = UserEmail.create(request?.email);
     const passwordOrError = UserPassword.create({ value: request.password });
     const usernameOrError = UserName.create({ name: request.username });
@@ -38,7 +31,9 @@ export class CreateUserUseCase
     ]);
 
     if (dtoResult.isFailure) {
-      return left(Result.fail<void>(dtoResult.getErrorValue())) as Response;
+      return left(
+        Result.fail<void>(dtoResult.getErrorValue())
+      ) as CreateUserResponse;
     }
 
     const email: UserEmail = emailOrError.getValue();
@@ -51,7 +46,7 @@ export class CreateUserUseCase
       if (userAlreadyExists) {
         return left(
           new CreateUserErrors.EmailAlreadyExistsError(email.value)
-        ) as Response;
+        ) as CreateUserResponse;
       }
 
       try {
@@ -63,7 +58,7 @@ export class CreateUserUseCase
         if (userNameTaken) {
           return left(
             new CreateUserErrors.UsernameTakenError(username.value)
-          ) as Response;
+          ) as CreateUserResponse;
         }
       } catch (err) {}
 
@@ -76,7 +71,7 @@ export class CreateUserUseCase
       if (userOrError.isFailure) {
         return left(
           Result.fail<User>(userOrError.getErrorValue().toString())
-        ) as Response;
+        ) as CreateUserResponse;
       }
 
       const user: User = userOrError.getValue();
@@ -85,7 +80,7 @@ export class CreateUserUseCase
 
       return right(Result.ok<void>());
     } catch (err) {
-      return left(new AppError.UnexpectedError(err)) as Response;
+      return left(new AppError.UnexpectedError(err)) as CreateUserResponse;
     }
   }
 }
