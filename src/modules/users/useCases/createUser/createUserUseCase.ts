@@ -6,6 +6,7 @@ import { CreateUserErrors } from "./createUserErrors";
 import { UserEmail } from "../../domain/userEmail";
 import { UserPassword } from "../../domain/userPassword";
 import { UserName } from "../../domain/userName";
+import { IUserRepo } from "../../repos/userRepo";
 
 type Response = Either<
   | CreateUserErrors.EmailAlreadyExistsError
@@ -18,6 +19,12 @@ type Response = Either<
 export class CreateUserUseCase
   implements UseCase<CreateUserDTO, Promise<Response>>
 {
+  private userRepo: IUserRepo;
+
+  constructor(userRepo: IUserRepo) {
+    this.userRepo = userRepo;
+  }
+
   async execute(request: CreateUserDTO): Promise<Response> {
     const emailOrError = UserEmail.create(request?.email);
     const passwordOrError = UserPassword.create({ value: request.password });
