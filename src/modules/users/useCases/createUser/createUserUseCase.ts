@@ -6,6 +6,7 @@ import { CreateUserErrors } from "./createUserErrors";
 import { UserEmail } from "../../domain/userEmail";
 import { UserPassword } from "../../domain/userPassword";
 import { UserName } from "../../domain/userName";
+import { User } from "../../domain/user";
 import { IUserRepo } from "../../repos/userRepo";
 
 type Response = Either<
@@ -45,6 +46,43 @@ export class CreateUserUseCase
     const username: UserName = usernameOrError.getValue();
 
     try {
+      const userAlreadyExists = await this.userRepo.exists(email);
+
+      if (userAlreadyExists) {
+        return left(
+          new CreateUserErrors.EmailAlreadyExistsError(email.value)
+        ) as Response;
+      }
+
+      try {
+        const alreadyCreatedUserByUserName =
+          await this.userRepo.getUserByUserName(username);
+
+        const userNameTaken = !!alreadyCreatedUserByUserName === true;
+
+        if (userNameTaken) {
+          return left(
+            new CreateUserErrors.UsernameTakenError(username.value)
+          ) as Response;
+        }
+      } catch (err) {}
+
+      const userOrError: Result<User> = User.create({
+        email,
+        password,
+        username,
+      });
+
+      if (userOrError.isFailure) {
+        return left(
+          Result.fail<User>(userOrError.getErrorValue().toString())
+        ) as Response;
+      }
+
+      const user: User = userOrError.getValue();
+
+      await this.userRepo.save(user);
+
       return right(Result.ok<void>());
     } catch (err) {
       return left(new AppError.UnexpectedError(err)) as Response;
