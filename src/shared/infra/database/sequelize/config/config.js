@@ -13,7 +13,7 @@ const {
   CLEARDB_DATABASE_URL,
 } = process.env;
 
-export const databaseCredentials = {
+const databaseCredentials = {
   development: {
     username: DDD_FORUM_DB_USER,
     password: DDD_FORUM_DB_PASS,
@@ -40,11 +40,13 @@ export const databaseCredentials = {
 const { username, password, database, host, dialect } =
   databaseCredentials[NODE_ENV];
 
+module.exports = databaseCredentials;
+
 const mode = DDD_FORUM_IS_PRODUCTION === "true" ? "prod" : "dev";
 
 console.log(`[DB]: Connecting to the database in ${mode} mode.`);
 
-export const connection =
+module.exports.connection =
   DDD_FORUM_IS_PRODUCTION === "true"
     ? new Sequelize(CLEARDB_DATABASE_URL)
     : new Sequelize(database, username, password, {

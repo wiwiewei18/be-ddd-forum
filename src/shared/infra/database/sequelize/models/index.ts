@@ -1,9 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as Sequelize from "sequelize";
-import { connection } from "../config/config";
+import config from "../config/config";
 
-const sequelize = connection;
+const sequelize = config.connection;
 
 // turns base_user => BaseUser
 function toCamelCase(str: string) {
