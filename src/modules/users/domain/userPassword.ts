@@ -52,15 +52,10 @@ export class UserPassword extends ValueObject<IUserPasswordProps> {
 
   private hashPassword(password: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      bcrypt.hash(
-        password,
-        process.env.DDD_FORUM_HASHING_SALT as string,
-        null,
-        (err, hash) => {
-          if (err) return reject(err);
-          resolve(hash);
-        }
-      );
+      bcrypt.hash(password, null, null, (err, hash) => {
+        if (err) return reject(err);
+        resolve(hash);
+      });
     });
   }
 

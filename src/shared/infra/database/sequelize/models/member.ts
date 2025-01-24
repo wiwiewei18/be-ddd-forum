@@ -38,7 +38,7 @@ export default (sequelize, DataTypes) => {
       targetKey: "base_user_id",
       as: "BaseUser",
     });
-    Member.hasMany(models.Post, { foreignKey: "member_id", as: "Post" });
+    // Member.hasMany(models.Post, { foreignKey: "member_id", as: "Post" });
   };
 
   return Member;

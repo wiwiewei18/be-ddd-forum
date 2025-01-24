@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as Sequelize from "sequelize";
+import { Sequelize, Model, DataTypes } from "sequelize"; // Adjust imports
 import config from "../config/config";
 
 const sequelize = config.connection;
@@ -36,14 +36,17 @@ const createModels = () => {
         (~t.indexOf(".ts") || ~t.indexOf(".js")) &&
         !~t.indexOf("index") &&
         !~t.indexOf(".map")
-    )
-    .map((model) => sequelize.import(__dirname + "/" + model));
+    );
 
-  // Camel case the models
-  for (let i = 0; i < modelsList.length; i++) {
-    const modelName = toCamelCase(modelsList[i].name);
-    models[modelName] = modelsList[i];
-  }
+  // Dynamically import the models
+  modelsList.forEach((modelFile) => {
+    const model = require(path.join(__dirname, modelFile)).default(
+      sequelize,
+      DataTypes
+    );
+    const modelName = toCamelCase(model.name);
+    models[modelName] = model;
+  });
 
   // Create the relationships for the models;
   Object.keys(models).forEach((modelName) => {
